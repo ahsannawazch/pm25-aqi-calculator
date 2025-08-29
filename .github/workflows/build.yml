@@ -1,0 +1,94 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git \
+          python3-pip \
+          openjdk-11-jdk \
+          unzip \
+          wget \
+          cython3 \
+          libffi-dev \
+          libssl-dev \
+          build-essential \
+          autoconf \
+          libtool \
+          pkg-config
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install buildozer kivy==2.3.1
+
+    - name: Install project dependencies
+      run: |
+        pip install matplotlib numpy pandas openpyxl weasyprint plyer
+
+    - name: Configure Git (required for buildozer)
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+
+    - name: Build Android APK
+      run: |
+        # Clean any previous builds
+        buildozer android clean
+
+        # Build debug APK
+        buildozer android debug
+      continue-on-error: false
+      timeout-minutes: 45
+
+    - name: List generated files
+      run: |
+        echo "=== Build Directory ==="
+        ls -la .buildozer/
+        echo "=== Bin Directory ==="
+        ls -la bin/ || echo "Bin directory not found"
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk
+        path: |
+          bin/*.apk
+          bin/*.aab
+        retention-days: 30
+        if-no-files-found: error
+
+    - name: Upload build logs
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          .buildozer/android/platform/python-for-android/dist/*/build/**/*.log
+          .buildozer/android/platform/build/**/*.log
+        if-no-files-found: warn
+
+    - name: Notify on success
+      if: success()
+      run: |
+        echo "✅ APK build completed successfully!"
+        echo "📱 Download your APK from the 'android-apk' artifact above"

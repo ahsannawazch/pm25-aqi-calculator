@@ -1,0 +1,27 @@
+[project]
+name = "baji-project-data"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fpdf>=1.7.2",
+    "kivy>=2.3.1",
+    "kivy-garden>=0.1.5",
+    "kivy-garden-graph>=0.4.0",
+    "kivy-garden-matplotlib>=0.1.1.dev0",
+    "kivy-matplotlib-widget>=0.15.0",
+    "matplotlib>=3.10.5",
+    "numpy>=2.3.2",
+    "pdfkit>=1.0.0",
+    "plotly>=5.15.0",
+    "reportlab>=4.4.3",
+    "seaborn>=0.13.2",
+    "weasyprint>=66.0",
+    "wkhtmltopdf>=0.2",
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "plyer>=2.1.0",
+    "kaleido>=1.0.0",
+    "buildozer>=1.5.0",
+]

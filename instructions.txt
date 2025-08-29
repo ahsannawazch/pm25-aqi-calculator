@@ -1,0 +1,5 @@
+the app asks for initial mass, final mass, flow rate, initial and final times from the user then using aqi_calculator (another file in my code base) it generate the conentration (Conc. (ug/m3) used to calculate AQI) and AQI-PM2.5 ug/m3 values that are used in the report. Everything else is contstant like location etc. The app (this functionality is yet the be added) will provide the data of all aqi for the current month uptill today to get this chart. The chart shoud look like the same as in the pdf file. I mean the bar should represent the color (like green, yellow, red) based on the aqi value for each day.
+
+the date is dynamic, location is fixed, Parameter used to calculate AQI is fixed,  PEQS value 35 is fixed.  chart is dynamic
+
+take a look at main.py and all the relevant html, css , javascript files (These are the ones which needs to be fixed to mimic the report as it is , this is very important).

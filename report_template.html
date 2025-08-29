@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Report - Rawalpindi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .header {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border: 2px solid #000;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .header h2 {
+            margin: 10px 0;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .date {
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            margin-bottom: 30px;
+            border: 2px solid #000;
+        }
+        
+        .data-table th,
+        .data-table td {
+            border: 1px solid #000;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .data-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .aqi-value {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border: 2px solid #000;
+            margin-bottom: 30px;
+            height: 400px;
+        }
+        
+        .notes {
+            background-color: white;
+            padding: 15px;
+            border: 2px solid #000;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        
+        .notes p {
+            margin: 5px 0;
+        }
+        
+        @media print {
+            .print-button {
+                display: none;
+            }
+            
+            body {
+                background-color: white;
+            }
+            
+            .chart-container {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button" onclick="window.print()">Print Report</button>
+    
+    <div class="header">
+        <h1>AIR QUALITY INDEX (AQI) OF DISTRICT RAWALPINDI</h1>
+        <h2>(Monitored by EPA Lab, Rawalpindi)</h2>
+        <div class="date">
+            <strong>{current_date}</strong><br>
+            <strong>(BASED ON PREVIOUS 24 HOURS DATA)</strong>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Location</th>
+                <th>Parameter used to calculate AQI</th>
+                <th>PEQS value</th>
+                <th>Conc. (&micro;g/m&sup3;) used to calculate AQI</th>
+                <th>AQI-PM&#8322;.&#8325; &micro;g/m&sup3;</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{location}</td>
+                <td>PM&#8322;.&#8325;</td>
+                <td>35</td>
+                <td>{pm25_concentration:.1f}</td>
+                <td class="aqi-value" style="color: {current_color};">{aqi_value}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="chart-container">
+        <canvas id="aqiChart"></canvas>
+    </div>
+
+    <!-- AQI Limits Diagram -->
+    <div style="margin: 30px 0;">
+        <h3 style="text-align: center; margin-bottom: 20px;">AQI Health Categories and Limits</h3>
+        <div style="display: flex; justify-content: center;">
+            <table style="border-collapse: collapse; border: 2px solid #000;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #000; padding: 10px; background: #f0f0f0; font-weight: bold;">AQI Range</th>
+                        <th style="border: 1px solid #000; padding: 10px; background: #f0f0f0; font-weight: bold;">Health Category</th>
+                        <th style="border: 1px solid #000; padding: 10px; background: #f0f0f0; font-weight: bold;">Color Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 10px; text-align: center;">0-50</td>
+                        <td style="border: 1px solid #000; padding: 10px;">Good</td>
+                        <td style="border: 1px solid #000; padding: 10px; background: #00E400; color: #000; text-align: center; font-weight: bold;">Green</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 10px; text-align: center;">51-100</td>
+                        <td style="border: 1px solid #000; padding: 10px;">Moderate</td>
+                        <td style="border: 1px solid #000; padding: 10px; background: #FFFF00; color: #000; text-align: center; font-weight: bold;">Yellow</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 10px; text-align: center;">101-150</td>
+                        <td style="border: 1px solid #000; padding: 10px;">Unhealthy for Sensitive Groups</td>
+                        <td style="border: 1px solid #000; padding: 10px; background: #FF7E00; color: #000; text-align: center; font-weight: bold;">Orange</td>
+                    </tr>
+                    <tr style="background: #ffe6e6;">
+                        <td style="border: 1px solid #000; padding: 10px; text-align: center; font-weight: bold;">151-200</td>
+                        <td style="border: 1px solid #000; padding: 10px; font-weight: bold;">Unhealthy</td>
+                        <td style="border: 1px solid #000; padding: 10px; background: #FF0000; color: #fff; text-align: center; font-weight: bold;">Red</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 10px; text-align: center;">201-300</td>
+                        <td style="border: 1px solid #000; padding: 10px;">Very Unhealthy</td>
+                        <td style="border: 1px solid #000; padding: 10px; background: #8F3F97; color: #fff; text-align: center; font-weight: bold;">Purple</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 10px; text-align: center;">301+</td>
+                        <td style="border: 1px solid #000; padding: 10px;">Hazardous</td>
+                        <td style="border: 1px solid #000; padding: 10px; background: #7E0023; color: #fff; text-align: center; font-weight: bold;">Maroon</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="notes">
+        <p><strong>Note:</strong></p>
+        <p>i. AQI report based on PM&#8322;.&#8325; measured by using Air-Metric SPM Sampler</p>
+        <p>ii. Breakpoints used as proposed/adopted by EPA 2024</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // AQI data for the current month
+        const dates = {dates_js};
+        const aqiValues = {aqi_js};
+
+        // Create gradient colors based on AQI levels
+        const getAQIColor = (value) => {
+            if (value <= 50) return '#00E400';      // Good (Green)
+            if (value <= 100) return '#FFFF00';    // Moderate (Yellow)
+            if (value <= 150) return '#FF7E00';    // Unhealthy for Sensitive Groups (Orange)
+            if (value <= 200) return '#FF0000';    // Unhealthy (Red)
+            if (value <= 300) return '#8F3F97';    // Very Unhealthy (Purple)
+            return '#7E0023';                       // Hazardous (Maroon)
+        };
+
+        const backgroundColors = {colors_js};
+
+        const ctx = document.getElementById('aqiChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'AQI Concentration based on PM2.5',
+                    data: aqiValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#333',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'AQI Concentration based on PM2.5 - Current Month',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const aqi = context.parsed.y;
+                                let category = 'Good';
+                                if (aqi <= 50) category = 'Good';
+                                else if (aqi <= 100) category = 'Moderate';
+                                else if (aqi <= 150) category = 'Unhealthy for Sensitive Groups';
+                                else if (aqi <= 200) category = 'Unhealthy';
+                                else if (aqi <= 300) category = 'Very Unhealthy';
+                                else category = 'Hazardous';
+                                return `AQI: ${aqi} (${category})`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 350,
+                        title: {
+                            display: true,
+                            text: 'AQI Value'
+                        },
+                        grid: {
+                            color: '#e0e0e0'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value;
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date (MM/DD/YYYY)'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            font: {
+                                size: 10
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                elements: {
+                    bar: {
+                        borderRadius: 3,
+                        borderSkipped: false
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+
+        // Highlight today's bar (last bar)
+        setTimeout(() => {
+            const meta = chart.getDatasetMeta(0);
+            const lastBar = meta.data[meta.data.length - 1];
+            if (lastBar) {
+                lastBar.options.borderColor = '#000';
+                lastBar.options.borderWidth = 3;
+                chart.update();
+            }
+        }, 100);
+    </script>
+</body>
+</html>

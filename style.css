@@ -1,0 +1,84 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: white;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.header h2 {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.date {
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.data-table th,
+.data-table td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+}
+
+.data-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.chart-container {
+    margin: 30px 0;
+    height: 400px;
+}
+
+.notes {
+    margin-top: 20px;
+    font-size: 12px;
+}
+
+.notes p {
+    margin: 5px 0;
+}
+
+.aqi-value {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.print-button {
+    margin: 20px 0;
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.print-button:hover {
+    background: #0056b3;
+}
+
+@media print {
+    .print-button {
+        display: none;
+    }
+}
+

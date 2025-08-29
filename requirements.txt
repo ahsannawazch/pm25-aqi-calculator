@@ -1,0 +1,5 @@
+Compute PM2.5 concentration from sampling inputs (flow, masses, times) and convert that concentration to a PM2.5 AQI.
+Keep and show a history of calculations (store data locally).
+Show results on a second screen with a full report preview before exporting.
+Let the user accept the preview and then download or print the report (PDF).
+Include metadata (location, date, chart/history) in the report for sharing or record-keeping.
