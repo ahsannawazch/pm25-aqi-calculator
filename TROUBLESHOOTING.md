@@ -27,7 +27,16 @@
 3. **Let buildozer handle NDK**: Removed manual NDK installation
 4. **Check network**: Ensure stable internet connection for large downloads
 
-### Issue 4: "python-for-android directory not found"
+### Issue 4: SDK Manager Not Found
+**Error**: `sdkmanager path "/home/runner/android-sdk/tools/bin/sdkmanager" does not exist, sdkmanager is not installed`
+
+**Solutions**:
+1. **Legacy tools structure**: The workflow now creates the expected directory structure
+2. **PATH setup**: Ensures sdkmanager is in the correct PATH
+3. **Verification**: Added checks to confirm sdkmanager installation
+4. **Retry logic**: Automatic retry if SDK setup fails
+
+### Issue 5: "python-for-android directory not found"
 **Error**: `FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/.../python-for-android'`
 
 **Solutions**:
