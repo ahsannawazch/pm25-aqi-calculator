@@ -18,7 +18,16 @@
 2. **Manual license acceptance**: If needed, run `yes | sdkmanager --licenses`
 3. **Check SDK installation**: Ensure Android SDK is properly downloaded
 
-### Issue 3: "python-for-android directory not found"
+### Issue 3: NDK Download Fails
+**Error**: `ValueError: read of closed file` during NDK download
+
+**Solutions**:
+1. **Retry logic**: The workflow now includes automatic retry (3 attempts)
+2. **Stable NDK version**: Using recommended NDK version (25b)
+3. **Let buildozer handle NDK**: Removed manual NDK installation
+4. **Check network**: Ensure stable internet connection for large downloads
+
+### Issue 4: "python-for-android directory not found"
 **Error**: `FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/.../python-for-android'`
 
 **Solutions**:

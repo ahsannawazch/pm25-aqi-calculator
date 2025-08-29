@@ -104,8 +104,8 @@ jobs:
         # Accept all Android SDK licenses
         yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
 
-        # Install required Android packages
-        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install 'platforms;android-31' 'build-tools;33.0.2' 'platform-tools' 'ndk;23.1.7779620'
+        # Install required Android packages (without NDK - let buildozer handle it)
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install 'platforms;android-31' 'build-tools;33.0.2' 'platform-tools'
 
         # Verify installation
         echo "=== Android SDK Structure ==="
@@ -125,13 +125,35 @@ jobs:
         # Install buildozer and dependencies
         pip install --upgrade buildozer kivy
 
-        # Check buildozer version
+        # Check buildozer version and available targets
+        echo "=== Buildozer Info ==="
         buildozer --version
+        buildozer --help | head -15
 
-        # Build debug APK
-        buildozer android debug
+        # Show current directory and files
+        echo "=== Current Directory ==="
+        pwd
+        ls -la
+
+        # Build debug APK with retry logic
+        echo "=== Starting APK Build ==="
+        for i in {1..3}; do
+          echo "Build attempt $i/3"
+          if buildozer android debug; then
+            echo "✅ Build successful!"
+            break
+          else
+            echo "❌ Build attempt $i failed"
+            if [ $i -eq 3 ]; then
+              echo "❌ All build attempts failed"
+              exit 1
+            fi
+            echo "⏳ Waiting 30 seconds before retry..."
+            sleep 30
+          fi
+        done
       continue-on-error: false
-      timeout-minutes: 60
+      timeout-minutes: 75
 
     - name: List generated files
       run: |
