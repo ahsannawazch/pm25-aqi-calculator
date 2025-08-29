@@ -80,57 +80,44 @@ jobs:
 
     - name: Set up Android SDK
       run: |
-        # Set environment variables
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export ANDROID_NDK_ROOT=$HOME/android-ndk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
+        # Use the system-installed Android SDK (already available on GitHub Actions)
+        export ANDROID_SDK_ROOT=$ANDROID_HOME
+        export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
+        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
 
-        # Create Android SDK directory
-        mkdir -p $ANDROID_SDK_ROOT
-        mkdir -p $ANDROID_NDK_ROOT
-
-        # Download and install Android SDK command line tools
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
-        unzip -q /tmp/cmdline-tools.zip -d /tmp/
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        mv /tmp/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
-
-        # Create the legacy tools directory structure that buildozer expects
-        mkdir -p $ANDROID_SDK_ROOT/tools/bin
-        cp -r $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/* $ANDROID_SDK_ROOT/tools/bin/ 2>/dev/null || true
-        cp -r $ANDROID_SDK_ROOT/cmdline-tools/latest/lib/* $ANDROID_SDK_ROOT/tools/lib/ 2>/dev/null || true
-
-        # Set up SDK environment
+        # Set up environment variables for buildozer
         echo "export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
         echo "export ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >> $GITHUB_ENV
-        echo "export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools" >> $GITHUB_ENV
+        echo "export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools" >> $GITHUB_ENV
 
-        # Accept all Android SDK licenses
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+        # Verify the system Android SDK installation
+        echo "=== System Android SDK ==="
+        echo "ANDROID_HOME: $ANDROID_HOME"
+        echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+        echo "ANDROID_NDK_ROOT: $ANDROID_NDK_ROOT"
 
-        # Install required Android packages (without NDK - let buildozer handle it)
-        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install 'platforms;android-31' 'build-tools;33.0.2' 'platform-tools'
-
-        # Verify sdkmanager is available
-        echo "=== SDK Manager Check ==="
-        which sdkmanager || echo "sdkmanager not in PATH"
-        ls -la $ANDROID_SDK_ROOT/tools/bin/sdkmanager || echo "sdkmanager not found in tools/bin"
-        ls -la $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager || echo "sdkmanager not found in cmdline-tools"
-
-        # Verify installation
-        echo "=== Android SDK Structure ==="
-        find $ANDROID_SDK_ROOT -maxdepth 2 -type d | head -20
-        echo "=== Build Tools ==="
-        ls -la $ANDROID_SDK_ROOT/build-tools/
+        echo "=== SDK Structure ==="
+        ls -la $ANDROID_SDK_ROOT/
         echo "=== Platform Tools ==="
         ls -la $ANDROID_SDK_ROOT/platform-tools/ || echo "Platform tools not found"
+        echo "=== Build Tools ==="
+        ls -la $ANDROID_SDK_ROOT/build-tools/ || echo "Build tools not found"
+
+        # Check if sdkmanager is available
+        echo "=== SDK Manager Check ==="
+        which sdkmanager || echo "sdkmanager not in PATH"
+        ls -la $ANDROID_SDK_ROOT/tools/bin/sdkmanager || echo "sdkmanager not found"
+
+        # Accept Android SDK licenses (if needed)
+        echo "=== Accepting SDK Licenses ==="
+        yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager --licenses || echo "License acceptance failed or already accepted"
 
     - name: Build Android APK
       run: |
-        # Set environment variables (same as setup step)
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export ANDROID_NDK_ROOT=$HOME/android-ndk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
+        # Set environment variables (use system Android SDK)
+        export ANDROID_SDK_ROOT=$ANDROID_HOME
+        export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
+        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
 
         # Install buildozer and dependencies
         pip install --upgrade buildozer kivy
@@ -144,7 +131,6 @@ jobs:
         echo "=== SDK Tools Check ==="
         which sdkmanager || echo "sdkmanager not in PATH"
         ls -la $ANDROID_SDK_ROOT/tools/bin/ | head -10
-        ls -la $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/ | head -10
 
         # Show current directory and files
         echo "=== Current Directory ==="

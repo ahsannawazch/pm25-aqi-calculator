@@ -36,7 +36,15 @@
 3. **Verification**: Added checks to confirm sdkmanager installation
 4. **Retry logic**: Automatic retry if SDK setup fails
 
-### Issue 5: "python-for-android directory not found"
+### Issue 5: Java ClassNotFoundException
+**Error**: `Could not find or load main class com.android.sdklib.tool.sdkmanager.SdkManagerCli`
+
+**Solutions**:
+1. **Use system Android SDK**: The workflow now uses GitHub Actions' pre-installed Android SDK
+2. **Correct Java version**: Ensure Java 17 compatibility with Android SDK
+3. **Proper PATH setup**: SDK tools are now correctly configured in PATH
+
+### Issue 6: "python-for-android directory not found"
 **Error**: `FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/.../python-for-android'`
 
 **Solutions**:
