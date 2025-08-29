@@ -83,9 +83,23 @@ jobs:
         # Use the system-installed Android SDK (already available on GitHub Actions)
         export ANDROID_SDK_ROOT=$ANDROID_HOME
         export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
-        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
+
+        # Find the actual sdkmanager location
+        SDKMANAGER_PATH=$(find $ANDROID_SDK_ROOT -name "sdkmanager" -type f 2>/dev/null | head -1)
+        if [ -z "$SDKMANAGER_PATH" ]; then
+          echo "❌ sdkmanager not found in Android SDK"
+          exit 1
+        fi
+
+        # Create the directory structure that buildozer expects
+        mkdir -p $ANDROID_SDK_ROOT/tools/bin
+        cp $SDKMANAGER_PATH $ANDROID_SDK_ROOT/tools/bin/ 2>/dev/null || true
+
+        # Also copy any other tools that might be needed
+        find $ANDROID_SDK_ROOT -name "*.jar" -path "*/tools/*" -exec cp {} $ANDROID_SDK_ROOT/tools/bin/ \; 2>/dev/null || true
 
         # Set up environment variables for buildozer
+        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
         echo "export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
         echo "export ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >> $GITHUB_ENV
         echo "export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools" >> $GITHUB_ENV
@@ -95,18 +109,31 @@ jobs:
         echo "ANDROID_HOME: $ANDROID_HOME"
         echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
         echo "ANDROID_NDK_ROOT: $ANDROID_NDK_ROOT"
+        echo "SDK Manager found at: $SDKMANAGER_PATH"
 
         echo "=== SDK Structure ==="
         ls -la $ANDROID_SDK_ROOT/
+        echo "=== Tools Directory ==="
+        ls -la $ANDROID_SDK_ROOT/tools/ || echo "Tools directory not found"
+        echo "=== Tools Bin Directory ==="
+        ls -la $ANDROID_SDK_ROOT/tools/bin/ || echo "Tools bin directory not found"
         echo "=== Platform Tools ==="
         ls -la $ANDROID_SDK_ROOT/platform-tools/ || echo "Platform tools not found"
         echo "=== Build Tools ==="
         ls -la $ANDROID_SDK_ROOT/build-tools/ || echo "Build tools not found"
 
-        # Check if sdkmanager is available
+        # Check if sdkmanager is now available
         echo "=== SDK Manager Check ==="
         which sdkmanager || echo "sdkmanager not in PATH"
-        ls -la $ANDROID_SDK_ROOT/tools/bin/sdkmanager || echo "sdkmanager not found"
+        ls -la $ANDROID_SDK_ROOT/tools/bin/sdkmanager || echo "sdkmanager not found in expected location"
+
+        # Additional debugging - find all sdkmanager instances
+        echo "=== All SDK Manager Locations ==="
+        find $ANDROID_SDK_ROOT -name "sdkmanager" -type f 2>/dev/null || echo "No sdkmanager found"
+
+        # Test if sdkmanager works
+        echo "=== Testing SDK Manager ==="
+        $ANDROID_SDK_ROOT/tools/bin/sdkmanager --version || echo "SDK Manager test failed"
 
         # Accept Android SDK licenses (if needed)
         echo "=== Accepting SDK Licenses ==="
@@ -114,7 +141,7 @@ jobs:
 
     - name: Build Android APK
       run: |
-        # Set environment variables (use system Android SDK)
+        # Set environment variables (use system Android SDK with corrected paths)
         export ANDROID_SDK_ROOT=$ANDROID_HOME
         export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
         export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools

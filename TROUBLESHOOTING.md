@@ -44,7 +44,16 @@
 2. **Correct Java version**: Ensure Java 17 compatibility with Android SDK
 3. **Proper PATH setup**: SDK tools are now correctly configured in PATH
 
-### Issue 6: "python-for-android directory not found"
+### Issue 6: SDK Manager Path Issues
+**Error**: `sdkmanager path "/usr/local/lib/android/sdk/tools/bin/sdkmanager" does not exist, sdkmanager is not installed`
+
+**Solutions**:
+1. **Dynamic path detection**: The workflow now automatically finds sdkmanager location
+2. **Legacy structure creation**: Creates expected directory structure for buildozer
+3. **PATH correction**: Ensures sdkmanager is in the correct PATH
+4. **Verification**: Added comprehensive checks for SDK tool availability
+
+### Issue 7: "python-for-android directory not found"
 **Error**: `FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/.../python-for-android'`
 
 **Solutions**:
