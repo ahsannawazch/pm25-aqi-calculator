@@ -78,22 +78,57 @@ jobs:
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
 
-    - name: Build Android APK
+    - name: Set up Android SDK
       run: |
-        # Set environment variables for better compatibility
+        # Set environment variables
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export ANDROID_NDK_ROOT=$HOME/android-ndk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools
+        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
 
-        # First, ensure we have the latest buildozer and python-for-android
+        # Create Android SDK directory
+        mkdir -p $ANDROID_SDK_ROOT
+        mkdir -p $ANDROID_NDK_ROOT
+
+        # Download and install Android SDK command line tools
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
+        unzip -q /tmp/cmdline-tools.zip -d $ANDROID_SDK_ROOT
+        mv $ANDROID_SDK_ROOT/cmdline-tools $ANDROID_SDK_ROOT/latest
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        mv $ANDROID_SDK_ROOT/latest $ANDROID_SDK_ROOT/cmdline-tools/
+
+        # Set up SDK environment
+        echo "export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+        echo "export ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >> $GITHUB_ENV
+        echo "export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_ENV
+
+        # Accept all Android SDK licenses
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+
+        # Install required Android packages
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install 'platforms;android-31' 'build-tools;33.0.2' 'platform-tools' 'ndk;23.1.7779620'
+
+        # Verify installation
+        echo "=== Android SDK Structure ==="
+        find $ANDROID_SDK_ROOT -maxdepth 2 -type d | head -20
+        echo "=== Build Tools ==="
+        ls -la $ANDROID_SDK_ROOT/build-tools/
+        echo "=== Platform Tools ==="
+        ls -la $ANDROID_SDK_ROOT/platform-tools/ || echo "Platform tools not found"
+
+    - name: Build Android APK
+      run: |
+        # Set environment variables
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export ANDROID_NDK_ROOT=$HOME/android-ndk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools
+
+        # Install buildozer and dependencies
         pip install --upgrade buildozer kivy
 
-        # Check buildozer version and available targets
+        # Check buildozer version
         buildozer --version
-        buildozer --help | head -20
 
-        # Build debug APK (this will download Android SDK/NDK automatically)
-        # Skip clean for first build to avoid python-for-android issues
+        # Build debug APK
         buildozer android debug
       continue-on-error: false
       timeout-minutes: 60

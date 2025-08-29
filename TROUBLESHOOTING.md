@@ -10,7 +10,15 @@
 - The GitHub Actions workflow should handle this automatically
 - If it persists, check that all dependencies are installed correctly
 
-### Issue 2: "python-for-android directory not found"
+### Issue 2: Android SDK License Issues
+**Error**: `Skipping following packages as the license is not accepted: Android SDK Build-Tools`
+
+**Solutions**:
+1. **Automatic license acceptance**: The workflow now accepts licenses automatically
+2. **Manual license acceptance**: If needed, run `yes | sdkmanager --licenses`
+3. **Check SDK installation**: Ensure Android SDK is properly downloaded
+
+### Issue 3: "python-for-android directory not found"
 **Error**: `FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/.../python-for-android'`
 
 **Solutions**:
